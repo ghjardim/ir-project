@@ -2,36 +2,43 @@ import numpy as np
 from collections import Counter
 
 
-def generate_vocab(processed_texts: list):
-    df = {}
+class Tfidf:
 
-    for i in range(len(processed_texts)):
-        tokens = processed_texts[i].split()
-        for w in tokens:
-            try:
-                df[w].add(i)
-            except:
-                df[w] = {i}
+    def __init__(self):
+        self.df = None
+        self.vectors = None
+        self.vocab = None
 
-    for i in df:
-        df[i] = len(df[i])
+    def generate_vocab(self, processed_texts: list):
+        df = {}
 
-    total_vocab = [x for x in df]
-    return df
+        for i in range(len(processed_texts)):
+            tokens = processed_texts[i].split()
+            for w in tokens:
+                try:
+                    df[w].add(i)
+                except:
+                    df[w] = {i}
 
+        for i in df:
+            df[i] = len(df[i])
 
-def tfidf(processed_texts: list):
+        self.vocab = [x for x in df]
+        self.df = df
 
-    df = generate_vocab(processed_texts)
-    tf_idf = {}
+    def vectorize(self, processed_texts: list):
 
-    for i in range(len(processed_texts)):
-        tokens = processed_texts[i].split()
-        counter = Counter(tokens)
-        count_words = len(tokens)
-        for token in np.unique(tokens):
-            tf = counter[token] / count_words
-            idf = np.log(len(processed_texts) / (df[token] + 1))
-            tf_idf[i, token] = tf * idf
+        self.generate_vocab(processed_texts)
+        tf_idf = {}
 
-    return tf_idf
+        for i in range(len(processed_texts)):
+            tokens = processed_texts[i].split()
+            counter = Counter(tokens)
+            count_words = len(tokens)
+            for token in np.unique(tokens):
+                tf = counter[token] / count_words
+                idf = np.log(len(processed_texts) / (self.df[token] + 1))
+                tf_idf[i, token] = tf * idf
+
+        self.vectors = tf_idf
+        return tf_idf
