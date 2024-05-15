@@ -1,17 +1,27 @@
-# from pathlib import Path
-from preprocessing import preprocess
-from tfidf import Tfidf
+import os
+from pathlib import Path
 from pprint import pprint
 
-# pathlist = Path("data/20_newsgroups").glob('**/*')
-# for path in pathlist:
-#     path_in_str = str(path)
-#     print(path_in_str)
+from tqdm import tqdm
+
+from preprocessing import preprocess
+from tfidf import Tfidf
 
 tfidf = Tfidf()
+docs = []
 
-path_in_str = "data/20_newsgroups/rec.sport.baseball/104501"
-data = preprocess(path_in_str)
-print(data)
+pathlist = Path("data/20_newsgroups").glob("**/*")
+for path in tqdm(pathlist):
+    if not os.path.isdir(path):
+        path_in_str = str(path)
+        docs.append(preprocess(path_in_str))
 
-pprint(tfidf.vectorize([data]))
+
+# path_in_str = "data/20_newsgroups/rec.sport.baseball/104501"
+# data =
+# print(data)
+
+pprint(tfidf.vectorize(docs))
+print("\n")
+print(tfidf.vocab)
+print(len(tfidf.vocab))
