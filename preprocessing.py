@@ -4,6 +4,7 @@ import numpy as np
 from nltk.stem.snowball import SnowballStemmer
 
 def preprocess(filename):
+
     f = open(filename, "r")
     data = ""
 
@@ -20,6 +21,13 @@ def preprocess(filename):
     for word in data.split():
         if word not in stop_words:
             data_ = data_ + " " + word
+    
+    #TODO treatment of metadata separately (keep symbols)
+
+    # Punctuation removal
+    symbols = "!\"#$%&()*+-./:;<=>?@[\]^_`{|}~\n"
+    for i in symbols:
+        data_ = data_.replace(i, ' ')
 
     # Stemmer
     snow_stemmer = SnowballStemmer(language='english')
