@@ -1,5 +1,6 @@
 import numpy as np
 from collections import Counter
+from tqdm import tqdm
 
 class Tfidf:
 
@@ -10,7 +11,7 @@ class Tfidf:
 
     def generate_vocab(self, processed_texts: list):
         df = {}
-        for i in range(len(processed_texts)):
+        for i in tqdm(range(len(processed_texts))):
             tokens = processed_texts[i].split()
             for w in tokens:
                 try:
@@ -25,7 +26,7 @@ class Tfidf:
     def vectorize(self, processed_texts: list):
         self.generate_vocab(processed_texts)
         tf_idf = {}
-        for i in range(len(processed_texts)):
+        for i in tqdm(range(len(processed_texts))):
             tokens = processed_texts[i].split()
             counter = Counter(tokens)
             count_words = len(tokens)
