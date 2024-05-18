@@ -9,6 +9,7 @@ from tfidf import Tfidf
 
 tfidf = Tfidf()
 docs = []
+docs_vect_dict = {}
 
 pathlist = Path("data/20_newsgroups").glob("**/*")
 for path in tqdm(pathlist):
@@ -16,12 +17,6 @@ for path in tqdm(pathlist):
         path_in_str = str(path)
         docs.append(preprocess(path_in_str))
 
+docs_vect_dict = tfidf.vectorize(docs)
 
-# path_in_str = "data/20_newsgroups/rec.sport.baseball/104501"
-# data =
-# print(data)
-
-pprint(tfidf.vectorize(docs))
-print("\n")
-print(tfidf.vocab)
-print(len(tfidf.vocab))
+pprint(tfidf.get_tfidf_vector(0))
