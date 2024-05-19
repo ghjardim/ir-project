@@ -33,7 +33,7 @@ def preprocess(filename):
     # TODO treatment of metadata separately (keep symbols)
 
     # Punctuation removal
-    symbols = '!"#$%&()*+-./:;<=>?@[\]^_`{|}~\n'
+    symbols = '!"#$%&()*+-./:;<=>?@[\]^_`{|}~,\n'
     for i in symbols:
         data_ = data_.replace(i, " ")
 
