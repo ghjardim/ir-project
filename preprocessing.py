@@ -1,5 +1,7 @@
+import re
 import nltk
 import numpy as np
+from num2words import num2words
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 
@@ -15,6 +17,11 @@ def preprocess(filename):
         line = line.lstrip(">")  # Removal of trailing '>' quotation symbol
         data += line + " "
     data = data.lower()  # To lowercase
+
+    # Converting numbers to words
+    for number in re.findall(r'\d+', data):
+        word = num2words(int(number))
+        data = data.replace(number, word, 1)
 
     # Stopwords removal
     stop_words = stopwords.words("english")
