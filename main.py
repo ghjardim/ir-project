@@ -6,6 +6,7 @@ from tqdm import tqdm
 
 from preprocessing import preprocess
 from tfidf import Tfidf
+from retrieval import compute_cosine_similarity_matrix
 
 tfidf = Tfidf()
 docs = []
@@ -18,10 +19,8 @@ for path in tqdm(pathlist):
         docs.append(preprocess(path_in_str))
 
 docs_vect_dict = tfidf.vectorize(docs)
-matrix = tfidf.compute_tfidf_matrix()
-doc = matrix[0].toarray()
-doc1 = matrix[1].toarray()
+tfidf_matrix = tfidf.compute_tfidf_matrix()
+sim_matrix = compute_cosine_similarity_matrix(tfidf_matrix)
 
-pprint(matrix.shape)
-pprint(doc)
-pprint(doc1)
+print(sim_matrix.shape)
+print(sim_matrix)
