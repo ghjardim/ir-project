@@ -1,6 +1,7 @@
 import numpy as np
 from collections import Counter
 from tqdm import tqdm
+from scipy.sparse import lil_matrix, csr_matrix
 
 class Tfidf:
 
@@ -44,3 +45,18 @@ class Tfidf:
         for token in self.vocab:
             vector.append(self.vectors.get((doc_id, token), 0.0))
         return np.array(vector)
+
+    def compute_tfidf_matrix(self):
+        if self.vectors is None:
+            raise ValueError("TF-IDF vectors not computed. Call vectorize() first.")
+        num_docs = len(set([doc_id for doc_id, token in self.vectors.keys()]))
+        num_tokens = len(self.vocab)
+
+        tfidf_matrix = lil_matrix((num_docs, num_tokens), dtype=np.float64)
+
+        for doc_id in tqdm(range(num_docs)):
+            for idx, token in enumerate(self.vocab):
+                if (doc_id, token) in self.vectors:
+                    tfidf_matrix[doc_id, idx] = self.vectors[(doc_id, token)]
+
+        return tfidf_matrix.tocsr()

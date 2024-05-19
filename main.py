@@ -18,5 +18,10 @@ for path in tqdm(pathlist):
         docs.append(preprocess(path_in_str))
 
 docs_vect_dict = tfidf.vectorize(docs)
+matrix = tfidf.compute_tfidf_matrix()
+doc = matrix[0].toarray()
+doc1 = matrix[1].toarray()
 
-pprint(tfidf.get_tfidf_vector(0))
+pprint(matrix.shape)
+pprint(doc)
+pprint(doc1)
