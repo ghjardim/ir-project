@@ -9,6 +9,7 @@ class Tfidf:
         self.df = None
         self.vectors = None
         self.vocab = None
+        self.matrix = None
 
     def generate_vocab(self, processed_texts: list):
         df = {}
@@ -60,4 +61,21 @@ class Tfidf:
                 tqdm(self.vectors.items(), desc="Computing tf-idf matrix"):
             tfidf_matrix[doc_id, token_index[token]] = value
 
+        self.matrix = tfidf_matrix
         return tfidf_matrix.tocsr()
+
+    def query_vectorize(self, query: str):
+        query_vector = []
+        query_tokens = query.split()
+        counter = Counter(query_tokens)
+        count_words = len(query_tokens)
+        for vocab_token in self.vocab:
+            if vocab_token in query_tokens:
+                tf = counter[vocab_token] / count_words
+                print("matrix: ", self.matrix)
+                idf = np.log((self.matrix.shape[0] / (self.df[vocab_token] + 1)))
+                print(self.matrix.shape[0] / (self.df[vocab_token] + 1))
+                query_vector.append(tf * idf)
+            else:
+                query_vector.append(0.0)
+        return query_vector
