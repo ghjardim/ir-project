@@ -12,7 +12,7 @@ class Tfidf:
 
     def generate_vocab(self, processed_texts: list):
         df = {}
-        for i in tqdm(range(len(processed_texts))):
+        for i in tqdm(range(len(processed_texts)), desc="Generating vocab"):
             tokens = processed_texts[i].split()
             for w in tokens:
                 try:
@@ -27,7 +27,7 @@ class Tfidf:
     def vectorize(self, processed_texts: list):
         self.generate_vocab(processed_texts)
         tf_idf = {}
-        for i in tqdm(range(len(processed_texts))):
+        for i in tqdm(range(len(processed_texts)), desc="Vectorizing"):
             tokens = processed_texts[i].split()
             counter = Counter(tokens)
             count_words = len(tokens)
@@ -49,14 +49,15 @@ class Tfidf:
     def compute_tfidf_matrix(self):
         if self.vectors is None:
             raise ValueError("TF-IDF vectors not computed. Call vectorize() first.")
-        num_docs = len(set([doc_id for doc_id, token in self.vectors.keys()]))
+
+        num_docs = len(set(doc_id for doc_id, token in self.vectors.keys()))
         num_tokens = len(self.vocab)
 
         tfidf_matrix = lil_matrix((num_docs, num_tokens), dtype=np.float64)
+        token_index = {token: idx for idx, token in enumerate(self.vocab)}
 
-        for doc_id in tqdm(range(num_docs)):
-            for idx, token in enumerate(self.vocab):
-                if (doc_id, token) in self.vectors:
-                    tfidf_matrix[doc_id, idx] = self.vectors[(doc_id, token)]
+        for (doc_id, token), value in \
+                tqdm(self.vectors.items(), desc="Computing tf-idf matrix"):
+            tfidf_matrix[doc_id, token_index[token]] = value
 
         return tfidf_matrix.tocsr()

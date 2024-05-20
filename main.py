@@ -13,7 +13,7 @@ docs = []
 docs_vect_dict = {}
 
 pathlist = Path("data/20_newsgroups").glob("**/*")
-for path in tqdm(pathlist):
+for path in tqdm(pathlist, desc="Loading docs"):
     if not os.path.isdir(path):
         path_in_str = str(path)
         docs.append(preprocess(path_in_str))

@@ -2,7 +2,9 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
 def compute_cosine_similarity_matrix(tfidf_matrix):
-    return cosine_similarity(tfidf_matrix)
+    print("Computing similarities...")
+    sim_matrix = cosine_similarity(tfidf_matrix)
+    return sim_matrix
 
 def get_top_k_similar_ids(cosine_sim_matrix, id, k):
     similarities = cosine_sim_matrix[id]
