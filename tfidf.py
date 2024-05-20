@@ -34,7 +34,7 @@ class Tfidf:
             count_words = len(tokens)
             for token in np.unique(tokens):
                 tf = counter[token] / count_words
-                idf = np.log(len(processed_texts) / (self.df[token] + 1))
+                idf = np.log((len(processed_texts) / (self.df[token])) + 1)
                 tf_idf[i, token] = tf * idf
         self.vectors = tf_idf
         return tf_idf
@@ -73,7 +73,7 @@ class Tfidf:
             if vocab_token in query_tokens:
                 tf = counter[vocab_token] / count_words
                 print("matrix: ", self.matrix)
-                idf = np.log((self.matrix.shape[0] / (self.df[vocab_token] + 1)))
+                idf = np.log((self.matrix.shape[0] / (self.df[vocab_token])) + 1)
                 print(self.matrix.shape[0] / (self.df[vocab_token] + 1))
                 query_vector.append(tf * idf)
             else:
