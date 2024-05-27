@@ -19,10 +19,10 @@ def preprocess(filename):
     data = data.lower()  # To lowercase
 
     # Converting numbers to words
-    for number in re.findall(r'\d+', data):
+    for number in re.findall(r"\d+", data):
         word = num2words(int(number))
         data = data.replace(number, word, 1)
-
+        
     # Stopwords removal
     stop_words = stopwords.words("english")
     data_ = ""
@@ -41,6 +41,37 @@ def preprocess(filename):
     snow_stemmer = SnowballStemmer(language="english")
     stem_words = ""
     for w in data_.split():
+        x = snow_stemmer.stem(w)
+        stem_words = stem_words + " " + x
+
+    return stem_words
+
+def preprocess_query(query):
+    query = query.lower()  # To lowercase
+
+    # Converting numbers to words
+    for number in re.findall(r"\d+", query):
+        word = num2words(int(number))
+        query = query.replace(number, word, 1)
+
+    # Stopwords removal
+    stop_words = stopwords.words("english")
+    query_ = ""
+    for word in query.split():
+        if word not in stop_words:
+            query_ = query_ + " " + word
+
+    # TODO treatment of metaquery separately (keep symbols)
+
+    # Punctuation removal
+    symbols = '!"#$%&()*+-./:;<=>?@[\]^_`{|}~,\n'
+    for i in symbols:
+        query_ = query_.replace(i, " ")
+
+    # Stemmer
+    snow_stemmer = SnowballStemmer(language="english")
+    stem_words = ""
+    for w in query_.split():
         x = snow_stemmer.stem(w)
         stem_words = stem_words + " " + x
 

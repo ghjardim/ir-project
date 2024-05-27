@@ -2,6 +2,8 @@ import numpy as np
 from collections import Counter
 from tqdm import tqdm
 from scipy.sparse import lil_matrix, csr_matrix
+from ranking import compute_cosine_similarity_matrix, get_top_k_similar
+from preprocessing import preprocess_query
 
 class Tfidf:
 
@@ -11,7 +13,7 @@ class Tfidf:
         self.vocab = None
         self.matrix = None
 
-    def generate_vocab(self, processed_texts: list):
+    def __generate_vocab(self, processed_texts: list):
         df = {}
         for i in tqdm(range(len(processed_texts)), desc="Generating vocab"):
             tokens = processed_texts[i].split()
@@ -25,8 +27,9 @@ class Tfidf:
         self.vocab = [x for x in df]
         self.df = df
 
-    def vectorize(self, processed_texts: list):
-        self.generate_vocab(processed_texts)
+    def vectorize(self, processed_texts: list, reference_to_text: list):
+        self.__generate_vocab(processed_texts)
+        self.original_reference = reference_to_text
         tf_idf = {}
         for i in tqdm(range(len(processed_texts)), desc="Vectorizing"):
             tokens = processed_texts[i].split()
@@ -64,7 +67,7 @@ class Tfidf:
         self.matrix = tfidf_matrix
         return tfidf_matrix.tocsr()
 
-    def query_vectorize(self, query: str):
+    def __query_vectorize(self, query: str):
         query_vector = []
         query_tokens = query.split()
         counter = Counter(query_tokens)
@@ -72,10 +75,27 @@ class Tfidf:
         for vocab_token in self.vocab:
             if vocab_token in query_tokens:
                 tf = counter[vocab_token] / count_words
-                print("matrix: ", self.matrix)
+                #print("matrix: ", self.matrix)
                 idf = np.log((self.matrix.shape[0] / (self.df[vocab_token])) + 1)
-                print(self.matrix.shape[0] / (self.df[vocab_token] + 1))
+                #print(self.matrix.shape[0] / (self.df[vocab_token] + 1))
                 query_vector.append(tf * idf)
             else:
                 query_vector.append(0.0)
         return query_vector
+
+    def search(self, query: str, k: int):
+        query = preprocess_query(query)
+        print("processed query", query)
+        query_vector = self.__query_vectorize(query)
+        #print(query_vector)
+        sim_mat = compute_cosine_similarity_matrix(
+            docs_matrix=self.matrix,
+            query_vector=[query_vector]
+        )
+
+        #print(sim_mat)
+
+        return [self.original_reference[id] for id in get_top_k_similar(sim_mat, k)]
+
+
+        
