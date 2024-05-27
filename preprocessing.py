@@ -6,16 +6,19 @@ from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 
 
-def preprocess(filename):
+def preprocess(text=None, filename=None):
+    if filename:
+        f = open(filename, "r", encoding="ISO-8859-1")
+        data = ""
 
-    f = open(filename, "r", encoding="ISO-8859-1")
-    data = ""
+        # Data reading and basic preprocessing
+        for line in f.readlines():
+            line = line.rstrip()  # Removal of trailing '\n'
+            line = line.lstrip(">")  # Removal of trailing '>' quotation symbol
+            data += line + " "
+    else:
+        data = text    
 
-    # Data reading and basic preprocessing
-    for line in f.readlines():
-        line = line.rstrip()  # Removal of trailing '\n'
-        line = line.lstrip(">")  # Removal of trailing '>' quotation symbol
-        data += line + " "
     data = data.lower()  # To lowercase
 
     # Converting numbers to words
