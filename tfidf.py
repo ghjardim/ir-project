@@ -3,7 +3,7 @@ from collections import Counter
 from tqdm import tqdm
 from scipy.sparse import lil_matrix, csr_matrix
 from ranking import compute_cosine_similarity_matrix, get_top_k_similar
-from preprocessing import preprocess_query
+from preprocessing import preprocess
 
 class Tfidf:
 
@@ -83,9 +83,9 @@ class Tfidf:
                 query_vector.append(0.0)
         return query_vector
 
-    def search(self, query: str, k: int):
-        query = preprocess_query(query)
-        print("processed query", query)
+    def search(self, query:str=None, k:int=1, filename:str=None):
+        query = preprocess(text=query, filename=filename)
+        # print("processed query", query)
         query_vector = self.__query_vectorize(query)
         #print(query_vector)
         sim_mat = compute_cosine_similarity_matrix(
