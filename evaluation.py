@@ -37,14 +37,18 @@ def eval_by_theme(relevants: list, retrieved: list, themes: list, queries_themes
         map["theme"][queries_themes[i]] += mymap
         len_retrieved[queries_themes[i]] += 1
 
-    metrics["mean_precision"] = mean_precision / len(retrieved)
-    metrics["map"] = map / len(retrieved)
+    metrics["mean_precision"] = mean_precision["mean_precision"] / len(retrieved)
+    metrics["map"] = map["map"] / len(retrieved)
 
     for theme in themes:
-        metrics["theme"][theme] = {
-            "mean_precision": mean_precision["theme"][theme] / len_retrieved[theme],
-            "map": map["theme"][theme] / len_retrieved[theme],
-        }
+        metrics["theme"][theme] = (
+            {
+                "mean_precision": mean_precision["theme"][theme] / len_retrieved[theme],
+                "map": map["theme"][theme] / len_retrieved[theme],
+            }
+            if len_retrieved[theme] != 0
+            else {"mean_precision": 0, "map": 0}
+        )
 
     return metrics
 
