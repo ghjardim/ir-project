@@ -4,46 +4,116 @@ from pprint import pprint
 
 from tqdm import tqdm
 
-import ranking
+from evaluation import eval, eval_by_theme
 from preprocessing import preprocess
 from tfidf import Tfidf
 
-tfidf = Tfidf()
-docs = []
-doc_paths = []
-docs_vect_dict = {}
 
-theme_selection = None # "comp.graphics"
-corpus_path = "data/20_newsgroups"
-queries_path = "data/mini_newsgroups"
+def run_news(
+    ks,
+    calc_metrics_by_theme,
+    corpus_theme_selection: str = None,
+    queries_theme_selection: str = None,
+):
+    tfidf = Tfidf()
+    docs = []
+    docs_path = []
 
-if theme_selection:
-    corpus_path += '/'+theme_selection
-    queries_path += '/'+theme_selection
+    corpus_path = "data/20_newsgroups"
+    queries_path = "data/mini_newsgroups"
 
-pathlist = Path(corpus_path).glob("**/*")
-for path in tqdm(pathlist, desc="Loading docs"):
-    if not os.path.isdir(path):
+    if corpus_theme_selection:
+        corpus_path += "/" + corpus_theme_selection
+    if queries_theme_selection:
+        queries_path += "/" + queries_theme_selection
+
+    # Loading Corpus
+
+    pathlist = Path(corpus_path).glob("**/*")
+    file_list = [path for path in pathlist if path.is_file()]
+    themes = []
+
+    for path in tqdm(file_list, desc="Loading docs"):
         path_in_str = str(path)
         docs.append(preprocess(filename=path_in_str))
-        doc_paths.append(path_in_str)
+        docs_path.append(path)
 
-docs_vect_dict = tfidf.vectorize(docs, doc_paths)
-tfidf_matrix = tfidf.compute_tfidf_matrix()
+        theme = path.parent.name
+        if theme not in themes:
+            themes.append(theme)
 
-results = []
+    pprint(themes)
 
-pathlist = Path(queries_path).glob("**/*")
-for path in tqdm(pathlist, desc="Loading docs"):
-    if not os.path.isdir(path):
-        path_in_str = str(path)
-        results.append(
-            {
-                'query': path_in_str,
-                'results': tfidf.search(filename=path_in_str, k=10)
-            }
-        )
+    # Vectorize Corpus
 
-for res in results:
-    pprint(res)
-    print('----------------\n')
+    tfidf.vectorize(docs, docs_path)
+    tfidf.compute_tfidf_matrix()
+
+    # Loading Queries
+
+    pathlist = Path(queries_path).glob("**/*")
+    file_list = [path for path in pathlist if path.is_file()]
+
+    queries = []
+    for path in tqdm(file_list, desc="Loading queries"):
+        queries.append({"text": preprocess(filename=str(path)), "path": path})
+
+    # Eval Results
+
+    metrics = {}
+
+    for k in ks:
+        print(f"Evaluating for k={k}")
+        results = []
+        for query in tqdm(queries, desc="Searching"):
+
+            retrieved_docs = tfidf.search(
+                query=query["text"], k=k, is_preprocessed=True
+            )
+            retrieved_docs_with_theme = []
+            for doc in retrieved_docs:
+                retrieved_docs_with_theme.append({"id": doc, "theme": doc.parent.name})
+
+            results.append(
+                {
+                    "query": str(query["path"]),
+                    "query_theme": path.parent.name,
+                    "retrieved": retrieved_docs_with_theme,
+                }
+            )
+
+        # Calc MAP, and Precision for @k
+        results_to_eval = {"relevants": [], "retrieved": [], "query_theme": []}
+
+        for result in results:
+            results_to_eval["relevants"].append([result["query_theme"]])
+            results_to_eval["retrieved"].append(
+                [doc["theme"] for doc in result["retrieved"]]
+            )
+            results_to_eval["query_theme"].append(result["query_theme"])
+
+        if calc_metrics_by_theme:
+            print("Evaluating with themes")
+            metrics[f"@{k}"] = eval_by_theme(
+                results_to_eval["relevants"],
+                results_to_eval["retrieved"],
+                themes,
+                results_to_eval["theme"],
+            )
+        else:
+            print("Evaluating without themes")
+            metrics[f"@{k}"] = eval(
+                results_to_eval["relevants"], results_to_eval["retrieved"]
+            )
+
+    return metrics
+
+
+ks = [10, 20]
+calc_metrics_by_theme = False
+corpus_theme_selection = "comp.graphics"
+queries_theme_selection = "comp.graphics"
+
+pprint(
+    run_news(ks, calc_metrics_by_theme, queries_theme_selection=queries_theme_selection)
+)
