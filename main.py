@@ -15,6 +15,7 @@ def run_news(
     corpus_theme_selection: str = None,
     queries_theme_selection: str = None,
     show_vocab_size: bool = False,
+    preprocess_technique: str = "stemmer",
 ):
     tfidf = Tfidf()
     docs = []
@@ -43,7 +44,9 @@ def run_news(
 
     for path in tqdm(file_list, desc="Loading docs"):
         path_in_str = str(path)
-        doc = preprocess(filename=path_in_str, has_header=True)
+        doc = preprocess(
+            filename=path_in_str, has_header=True, technique=preprocess_technique
+        )
         if doc != "":
             docs.append(doc)
             docs_path.append(path)
@@ -73,7 +76,12 @@ def run_news(
     queries = []
     for path in tqdm(file_list, desc="Loading queries"):
         queries.append(
-            {"text": preprocess(filename=str(path), has_header=True), "path": path}
+            {
+                "text": preprocess(
+                    filename=str(path), has_header=True, technique=preprocess_technique
+                ),
+                "path": path,
+            }
         )
 
     results = []
@@ -139,5 +147,6 @@ pprint(
         ks=ks,
         calc_metrics_by_theme=True,
         show_vocab_size=True,
+        preprocess_technique="wordpiece",
     )
 )

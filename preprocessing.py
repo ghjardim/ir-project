@@ -4,9 +4,16 @@ import numpy as np
 from num2words import num2words
 from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
+from transformers import BertTokenizer
 
 
-def preprocess(text=None, filename=None, has_header=False, header_line_separator="\n"):
+def preprocess(
+    text=None,
+    filename=None,
+    has_header=False,
+    header_line_separator="\n",
+    technique: str = "stemmer",
+):
     if filename:
         f = open(filename, "r", encoding="ISO-8859-1")
         data = ""
@@ -47,11 +54,19 @@ def preprocess(text=None, filename=None, has_header=False, header_line_separator
     for i in symbols:
         data_ = data_.replace(i, " ")
 
-    # Stemmer
-    snow_stemmer = SnowballStemmer(language="english")
-    stem_words = ""
-    for w in data_.split():
-        x = snow_stemmer.stem(w)
-        stem_words = stem_words + " " + x
+    preprocessed_text = ""
 
-    return stem_words
+    if technique == "stemmer":
+        # Stemmer
+        snow_stemmer = SnowballStemmer(language="english")
+        for w in data_.split():
+            x = snow_stemmer.stem(w)
+            preprocessed_text = preprocessed_text + " " + x
+
+    elif technique == "wordpiece":
+        tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+        tokens = tokenizer.tokenize(data_)
+        for token in tokens:
+            preprocessed_text = preprocessed_text + " " + token
+
+    return preprocessed_text
