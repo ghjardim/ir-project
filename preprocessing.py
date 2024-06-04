@@ -41,7 +41,12 @@ def preprocess(
         data = data.replace(number, word, 1)
 
     # Stopwords removal
-    stop_words = stopwords.words("english")
+    try:
+        stop_words = stopwords.words("english")
+    except:
+        nltk.download("stopwords")
+        stop_words = stopwords.words("english")
+
     data_ = ""
     for word in data.split():
         if word not in stop_words:
