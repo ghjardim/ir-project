@@ -6,18 +6,25 @@ from nltk.corpus import stopwords
 from nltk.stem.snowball import SnowballStemmer
 
 
-def preprocess(text=None, filename=None):
+def preprocess(text=None, filename=None, has_header=False, header_line_separator="\n"):
     if filename:
         f = open(filename, "r", encoding="ISO-8859-1")
         data = ""
 
+        is_header = has_header
+        header_line_separator = "\n"
+
         # Data reading and basic preprocessing
         for line in f.readlines():
-            line = line.rstrip()  # Removal of trailing '\n'
-            line = line.lstrip(">")  # Removal of trailing '>' quotation symbol
-            data += line + " "
+            if not is_header:
+                line = line.rstrip()  # Removal of trailing '\n'
+                line = line.lstrip(">")  # Removal of trailing '>' quotation symbol
+                data += line + " "
+            elif line == header_line_separator:
+                is_header = False
+            # print(f"{line} : {is_header}")
     else:
-        data = text    
+        data = text
 
     data = data.lower()  # To lowercase
 
@@ -25,7 +32,7 @@ def preprocess(text=None, filename=None):
     for number in re.findall(r"\d+", data):
         word = num2words(int(number))
         data = data.replace(number, word, 1)
-        
+
     # Stopwords removal
     stop_words = stopwords.words("english")
     data_ = ""

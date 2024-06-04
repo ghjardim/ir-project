@@ -19,6 +19,7 @@ def run_news(
     tfidf = Tfidf()
     docs = []
     docs_path = []
+    excluded_docs = []
 
     corpus_path = "data/20_newsgroups"
     queries_path = "data/mini_newsgroups"
@@ -34,16 +35,27 @@ def run_news(
     file_list = [path for path in pathlist if path.is_file()]
     themes = []
 
+    """
+    113
+    266
+    386
+    """
+
     for path in tqdm(file_list, desc="Loading docs"):
         path_in_str = str(path)
-        docs.append(preprocess(filename=path_in_str))
-        docs_path.append(path)
+        doc = preprocess(filename=path_in_str, has_header=True)
+        if doc != "":
+            docs.append(doc)
+            docs_path.append(path)
 
-        theme = path.parent.name
-        if theme not in themes:
-            themes.append(theme)
+            theme = path.parent.name
+            if theme not in themes:
+                themes.append(theme)
+        else:
+            excluded_docs.append(path)
 
-    pprint(themes)
+    pprint(f"Themes: {themes}")
+    pprint(f"Excluded documents: {excluded_docs}")
 
     # Vectorize Corpus
 
@@ -60,7 +72,9 @@ def run_news(
 
     queries = []
     for path in tqdm(file_list, desc="Loading queries"):
-        queries.append({"text": preprocess(filename=str(path)), "path": path})
+        queries.append(
+            {"text": preprocess(filename=str(path), has_header=True), "path": path}
+        )
 
     results = []
 
@@ -76,7 +90,7 @@ def run_news(
         results.append(
             {
                 "query": str(query["path"]),
-                "query_theme": path.parent.name,
+                "query_theme": query["path"].parent.name,
                 "retrieved": retrieved_docs_with_theme,
             }
         )
@@ -97,6 +111,8 @@ def run_news(
             )
             results_to_eval["query_theme"].append(result["query_theme"])
 
+        # pprint(results_to_eval)
+
         if calc_metrics_by_theme:
             # print("Evaluating with themes")
             metrics[f"@{k}"] = eval_by_theme(
@@ -114,17 +130,14 @@ def run_news(
     return metrics
 
 
-ks = [10, 20]
-calc_metrics_by_theme = True
-corpus_theme_selection = "comp.graphics"
-queries_theme_selection = "comp.graphics"
+ks = [10, 20, 50, 100]
+corpus_theme_selection = "sci.med"
+queries_theme_selection = "alt.atheism"
 
 pprint(
     run_news(
-        ks,
-        calc_metrics_by_theme,
-        queries_theme_selection=queries_theme_selection,
-        corpus_theme_selection=corpus_theme_selection,
+        ks=ks,
+        calc_metrics_by_theme=True,
         show_vocab_size=True,
     )
 )

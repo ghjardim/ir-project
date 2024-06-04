@@ -6,6 +6,7 @@ def eval(relevants: list, retrieved: list):
     mean_precision = 0
     map = 0
     for i, _ in enumerate(retrieved):
+        # print(relevants[i], retrieved[i])
         mean_precision += calc_precision(relevants[i], retrieved[i])
         map += calc_average_precision(relevants[i], retrieved[i])
     metrics["mean_precision"] = mean_precision / len(retrieved)
